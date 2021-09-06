@@ -24,9 +24,15 @@ struct Nibbles {
     int fourth_nibble : 4;
 };
 
+struct Bytes {
+    uint8_t first_byte;
+    uint8_t second_byte;
+};
+
 union Instruction {
     uint16_t whole;
     Nibbles nibs;
+    Bytes bytes;
 };
 
 void fetchDecodeExecute(){
@@ -50,13 +56,18 @@ void fetchDecodeExecute(){
         case 0x1: // 1NNN jump
             break;
         case 0x6: // 6XNN set register VX
+            VX_reg[insty.nibs.second_nibble] = insty.bytes.second_byte;
             break;
         case 0x7: // 7XNN add value to register VX
+            VX_reg[insty.nibs.second_nibble] += insty.bytes.second_byte;
             break;
         case 0xA: // ANNN set index register I
+            I_reg = insty.nibs.second_nibble << 8 + insty.bytes.second_byte;
             break;
         case 0xD: // DXYN display/draw
             break;
+        default:
+            printf("Unhandled opcode %d", insty);
     }
 }
 
