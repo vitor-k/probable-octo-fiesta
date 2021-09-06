@@ -1,18 +1,29 @@
+
+#ifdef _WIN32
+// windows.h needs to be included before shellapi.h
+#include <windows.h>
+
+#include <shellapi.h>
+#endif
+
+#undef _UNICODE
+#include <getopt.h>
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
+
 #include <iostream>
 #include <stack>
 #include <fstream>
 #include <stdio.h>
-#define SDL_MAIN_HANDLED
-#include <SDL.h>
-#include <glad/glad.h>
+#include <stdint.h>
+#include <string>
+
+#include "sdl_impl.h"
 
 //Native screen dimensions
 constexpr unsigned int nWidth = 64;
 constexpr unsigned int nHeight = 32;
-
-//Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
 
 uint8_t emulated_memory[4096];
 uint16_t pc; //12 bits
@@ -87,52 +98,106 @@ void fetchDecodeExecute(){
     }
 }
 
-int main(int argc, char* args[]) {
-    //The window we'll be rendering to
-    SDL_Window* window = NULL;
-    
-    //The surface contained by the window
-    SDL_Surface* screenSurface = NULL;
+#ifdef _WIN32
+std::string UTF16ToUTF8(const std::wstring& input) {
+    if (input.empty())
+        return std::string();
 
-    //Initialize SDL
-    if( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
-        printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
+    // first call with cbMultiByte as 0 to get the required size
+    const auto size = WideCharToMultiByte(CP_UTF8, 0, input.data(), static_cast<int>(input.size()),
+                                          nullptr, 0, nullptr, nullptr);
+
+    std::string output(size, '\0');
+
+    // second call writes the string to output
+    WideCharToMultiByte(CP_UTF8, 0, input.data(), static_cast<int>(input.size()), &output[0],
+                        static_cast<int>(output.size()), nullptr, nullptr);
+
+    return output;
+}
+#endif
+
+static void printHelp(const char* argv0) {
+    std::cout << "Usage: " << argv0
+              << " [options] <filename>\n"
+                 "-h, --help            Display this help text and exit\n";
+}
+
+int main(int argc, char* args[]) {
+    int option_index = 0;
+    char* endarg = nullptr;
+
+#ifdef _WIN32
+    int argc_w;
+    auto argv_w = CommandLineToArgvW(GetCommandLineW(), &argc_w);
+
+    if (argv_w == nullptr) {
+        std::cout << "Failed to get command line arguments" << std::endl;
+        return -1;
     }
-    else {
-        //Create window
-        window = SDL_CreateWindow( "POF", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
-        if( window == NULL ) {
-            printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
+#endif
+
+    SDL_impl impl;
+    std::string filename;
+
+    static struct option long_options[] = {
+        {"help", no_argument, 0, 'h'},
+        {0, 0, 0, 0},
+    };
+
+    while (optind < argc) {
+        int arg = getopt_long(argc, args, "h", long_options, &option_index);
+        int tmp;
+        if (arg != -1) {
+            switch (static_cast<char>(arg)) {
+            case 'h':
+                printHelp(args[0]);
+                return 0;
+            }
+        } else {
+#ifdef _WIN32
+            filename = UTF16ToUTF8(argv_w[optind]);
+#else
+            filepath = argv[optind];
+#endif
+            std::string extension = filename.substr(filename.rfind('.'));
+
+            optind++;
+        }
+    }
+
+    if (filename.empty()) {
+        std::cout << "Filename not provided. Printing help." << std::endl;
+        printHelp(args[0]);
+        return 0;
+    }
+
+    std::ifstream file(filename, std::ios::in | std::ios::binary);
+    if (file.is_open()) {
+        // get length of file:
+        file.seekg (0, file.end);
+        int length = file.tellg();
+        file.seekg (0, file.beg);
+
+        if (length < 4096 - 512) {
+            std::cout << "Reading " << length << " bytes... " << std::endl;
+            file.read((char*) &emulated_memory[512], length);
+
+            if (file) {
+                std::cout << "all characters read successfully." << std::endl;
+            }
+            else {
+                std::cout << "error: only " << file.gcount() << " could be read" << std::endl;
+            }
         }
         else {
-            SDL_GL_CreateContext(window);
-
-            if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-                printf("Failed to initialize OpenGL context\n");
-                return -1;
-            }
-            printf("OpenGL Version %d.%d loaded\n", GLVersion.major, GLVersion.minor);
-            printf("%s\n", glGetString(GL_VERSION));
-            printf("%s\n", glGetString(GL_VENDOR));
-
-            //Get window surface
-            screenSurface = SDL_GetWindowSurface( window );
-
-            //Fill the surface white
-            SDL_FillRect( screenSurface, NULL, SDL_MapRGB( screenSurface->format, 0xFF, 0xFF, 0xFF ) );
-            
-            //Update the surface
-            SDL_UpdateWindowSurface( window );
-
-            //Wait two seconds
-            SDL_Delay( 2000 );
+            std::cout << "File too big" << std::endl;
+            file.close();
+            return 0;
         }
-    }
-    //Destroy window
-    SDL_DestroyWindow( window );
 
-    //Quit SDL subsystems
-    SDL_Quit();
+        file.close();
+    }
 
     return 0;
 }

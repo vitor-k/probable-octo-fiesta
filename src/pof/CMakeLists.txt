@@ -1,10 +1,11 @@
 add_executable(pof
     main.cpp
+    sdl_impl.cpp
 )
 
 create_target_directory_groups(pof)
 
-target_link_libraries(pof PRIVATE ${PLATFORM_LIBRARIES} SDL2 glad)
+target_link_libraries(pof PRIVATE ${PLATFORM_LIBRARIES} SDL2 glad getopt)
 
 if (MSVC)
     include(WindowsCopyFiles)
