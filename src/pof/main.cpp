@@ -1,3 +1,6 @@
+#include <iostream>
+#include <stack>
+#include <fstream>
 #include <stdio.h>
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
@@ -17,6 +20,8 @@ uint16_t pc; //12 bits
 uint16_t I_reg; //I registers
 uint8_t VX_reg[16]; //VX registers
 
+std::stack<uint16_t> stack;
+
 struct Nibbles {
     int first_nibble : 4;
     int second_nibble : 4;
@@ -29,10 +34,16 @@ struct Bytes {
     uint8_t second_byte;
 };
 
+struct NNN {
+    int first_nibble : 4;
+    int last_three_nibbles : 12;
+};
+
 union Instruction {
     uint16_t whole;
     Nibbles nibs;
     Bytes bytes;
+    NNN nnnib;
 };
 
 void fetchDecodeExecute(){
@@ -48,12 +59,17 @@ void fetchDecodeExecute(){
             }
             else if(insty.whole == 0x00EE) {
                 // return from subroutine
+                pc = stack.top();
+                stack.pop();
             }
             else {
                 // 0NNN execute subroutine
+                stack.push(pc);
+                pc = insty.nnnib.last_three_nibbles;
             }
             break;
         case 0x1: // 1NNN jump
+            pc = insty.nnnib.last_three_nibbles;
             break;
         case 0x6: // 6XNN set register VX
             VX_reg[insty.nibs.second_nibble] = insty.bytes.second_byte;
@@ -62,7 +78,7 @@ void fetchDecodeExecute(){
             VX_reg[insty.nibs.second_nibble] += insty.bytes.second_byte;
             break;
         case 0xA: // ANNN set index register I
-            I_reg = insty.nibs.second_nibble << 8 + insty.bytes.second_byte;
+            I_reg = insty.nnnib.last_three_nibbles;
             break;
         case 0xD: // DXYN display/draw
             break;
