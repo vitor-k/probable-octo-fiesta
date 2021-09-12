@@ -97,6 +97,61 @@ void Chip8::fetchDecodeExecute() {
         case 0x7: // 7XNN add value to register VX
             VX_reg[insty.getSecondNibble()] += insty.getSecondByte();
             break;
+        case 0x8:
+            switch(insty.getFourthNibble()) {
+                case 0x0: // 8XY0 set
+                    VX_reg[insty.getSecondNibble()] = VX_reg[insty.getThirdNibble()];
+                    break;
+                case 0x1: // 8XY1 bitwise logical OR
+                    VX_reg[insty.getSecondNibble()] = VX_reg[insty.getSecondNibble()] | VX_reg[insty.getThirdNibble()];
+                    break;
+                case 0x2: // 8XY2 bitwise logical AND
+                    VX_reg[insty.getSecondNibble()] = VX_reg[insty.getSecondNibble()] & VX_reg[insty.getThirdNibble()];
+                    break;
+                case 0x3: // 8XY3 bitwise logical XOR
+                    VX_reg[insty.getSecondNibble()] = VX_reg[insty.getSecondNibble()] ^ VX_reg[insty.getThirdNibble()];
+                    break;
+                case 0x4: // 8XY4 add
+                    {
+                        uint16_t sum = static_cast<uint16_t>(VX_reg[insty.getSecondNibble()]) + VX_reg[insty.getThirdNibble()];
+                        VX_reg[0xF] = (sum > 255);
+                        VX_reg[insty.getSecondNibble()] = static_cast<uint8_t>(sum % 256);
+                    }
+                    break;
+                case 0x5: // 8XY5 subtract
+                    {
+                        uint8_t vx = VX_reg[insty.getSecondNibble()];
+                        uint8_t vy = VX_reg[insty.getThirdNibble()];
+                        VX_reg[0xF] = (vx > vy);
+                        VX_reg[insty.getSecondNibble()] = vx - vy;
+                    }
+                    break;
+                case 0x7: // 8XY7 subtract
+                    {
+                        uint8_t vx = VX_reg[insty.getSecondNibble()];
+                        uint8_t vy = VX_reg[insty.getThirdNibble()];
+                        VX_reg[0xF] = (vy > vx);
+                        VX_reg[insty.getSecondNibble()] = vy - vx;
+                    }
+                    break;
+                case 0x6: //8XY6 right shift
+#ifndef CHIP8_NEW_SHIFT
+                    VX_reg[insty.getSecondNibble()] = VX_reg[insty.getThirdNibble()];
+#endif
+                    VX_reg[0xF] = VX_reg[insty.getSecondNibble()] & 1;
+                    VX_reg[insty.getSecondNibble()] = VX_reg[insty.getSecondNibble()] >> 1;
+                    break;
+                case 0xE: //8XYE left shift
+#ifndef CHIP8_NEW_SHIFT
+                    VX_reg[insty.getSecondNibble()] = VX_reg[insty.getThirdNibble()];
+#endif
+                    VX_reg[0xF] = VX_reg[insty.getSecondNibble()] & 0x8 >> 7;
+                    VX_reg[insty.getSecondNibble()] = VX_reg[insty.getSecondNibble()] << 1;
+                    break;
+                default:
+                    printf("Unhandled opcode %#6x\n", insty.whole);
+            }
+            break;
         case 0xA: // ANNN set index register I
             I_reg = insty.getLastThreeNibbles();
             break;
