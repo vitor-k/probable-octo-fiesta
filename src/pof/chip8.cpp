@@ -1,7 +1,14 @@
 #include "chip8.h"
 #include <cstdio>
+#include <chrono>
+#include <random>
 
 Chip8 global_chip;
+
+namespace {
+    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine randy(seed);
+} // Anonymous namespace
 
 Chip8::Chip8() {
     // Font
@@ -92,6 +99,9 @@ void Chip8::fetchDecodeExecute() {
             break;
         case 0xA: // ANNN set index register I
             I_reg = insty.getLastThreeNibbles();
+            break;
+        case 0xC: // CXNN random
+            VX_reg[insty.getSecondNibble()] = randy() & insty.getSecondByte();
             break;
         case 0xD: // DXYN display/draw
         {
