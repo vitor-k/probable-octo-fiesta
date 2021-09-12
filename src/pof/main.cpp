@@ -13,90 +13,14 @@
 #endif
 
 #include <iostream>
-#include <stack>
 #include <fstream>
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
+#include <thread>
+#include <memory>
 
 #include "sdl_impl.h"
-
-//Native screen dimensions
-constexpr unsigned int nWidth = 64;
-constexpr unsigned int nHeight = 32;
-
-uint8_t emulated_memory[4096];
-uint16_t pc; //12 bits
-
-uint16_t I_reg; //I registers
-uint8_t VX_reg[16]; //VX registers
-
-std::stack<uint16_t> stack;
-
-struct Nibbles {
-    int first_nibble : 4;
-    int second_nibble : 4;
-    int third_nibble : 4;
-    int fourth_nibble : 4;
-};
-
-struct Bytes {
-    uint8_t first_byte;
-    uint8_t second_byte;
-};
-
-struct NNN {
-    int first_nibble : 4;
-    int last_three_nibbles : 12;
-};
-
-union Instruction {
-    uint16_t whole;
-    Nibbles nibs;
-    Bytes bytes;
-    NNN nnnib;
-};
-
-void fetchDecodeExecute(){
-    //fetch
-    Instruction insty = *(Instruction*) (emulated_memory+pc);
-    pc += 2;
-
-    //decode
-    switch(insty.nibs.first_nibble){
-        case 0x0:
-            if(insty.whole == 0x00E0) {
-                // clear screen
-            }
-            else if(insty.whole == 0x00EE) {
-                // return from subroutine
-                pc = stack.top();
-                stack.pop();
-            }
-            else {
-                // 0NNN execute subroutine
-                stack.push(pc);
-                pc = insty.nnnib.last_three_nibbles;
-            }
-            break;
-        case 0x1: // 1NNN jump
-            pc = insty.nnnib.last_three_nibbles;
-            break;
-        case 0x6: // 6XNN set register VX
-            VX_reg[insty.nibs.second_nibble] = insty.bytes.second_byte;
-            break;
-        case 0x7: // 7XNN add value to register VX
-            VX_reg[insty.nibs.second_nibble] += insty.bytes.second_byte;
-            break;
-        case 0xA: // ANNN set index register I
-            I_reg = insty.nnnib.last_three_nibbles;
-            break;
-        case 0xD: // DXYN display/draw
-            break;
-        default:
-            printf("Unhandled opcode %d", insty);
-    }
-}
+#include "chip8.h"
 
 #ifdef _WIN32
 std::string UTF16ToUTF8(const std::wstring& input) {
@@ -137,7 +61,7 @@ int main(int argc, char* args[]) {
     }
 #endif
 
-    SDL_impl impl;
+    std::unique_ptr<SDL_impl> impl{std::make_unique<SDL_impl>()};
     std::string filename;
 
     static struct option long_options[] = {
@@ -147,7 +71,6 @@ int main(int argc, char* args[]) {
 
     while (optind < argc) {
         int arg = getopt_long(argc, args, "h", long_options, &option_index);
-        int tmp;
         if (arg != -1) {
             switch (static_cast<char>(arg)) {
             case 'h':
@@ -181,7 +104,7 @@ int main(int argc, char* args[]) {
 
         if (length < 4096 - 512) {
             std::cout << "Reading " << length << " bytes... " << std::endl;
-            file.read((char*) &emulated_memory[512], length);
+            file.read((char*) &global_chip.emulated_memory[512], length);
 
             if (file) {
                 std::cout << "all characters read successfully." << std::endl;
@@ -198,6 +121,12 @@ int main(int argc, char* args[]) {
 
         file.close();
     }
+
+    std::thread thready([&impl]{impl->Present();});
+    while(impl->IsOpen()){
+        impl->PollEvents();
+    }
+    thready.join();
 
     return 0;
 }

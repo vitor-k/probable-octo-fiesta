@@ -1,6 +1,9 @@
 add_executable(pof
     main.cpp
     sdl_impl.cpp
+    sdl_impl.h
+    chip8.cpp
+    chip8.h
 )
 
 create_target_directory_groups(pof)
