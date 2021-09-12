@@ -32,6 +32,8 @@ SDL_impl::SDL_impl(){
     }
     else {
         is_open = true;
+        SDL_SetWindowMinimumSize(window, nWidth, nHeight);
+
         SDL_GLContext context = SDL_GL_CreateContext(window);
 
         if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
