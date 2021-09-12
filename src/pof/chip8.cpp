@@ -64,6 +64,26 @@ void Chip8::fetchDecodeExecute() {
             stack.push(pc);
             pc = insty.getLastThreeNibbles();
             break;
+        case 0x3: // 3XNN skip equal
+            if(VX_reg[insty.getSecondNibble()] == insty.getSecondByte()) {
+                pc += 2;
+            }
+            break;
+        case 0x4: // 4XNN skip not equal
+            if(VX_reg[insty.getSecondNibble()] != insty.getSecondByte()) {
+                pc += 2;
+            }
+            break;
+        case 0x5: // 5XY0 skip if Vx == Vy
+            if(VX_reg[insty.getSecondNibble()] == VX_reg[insty.getThirdNibble()]) {
+                pc += 2;
+            }
+            break;
+        case 0x9: // 9XY0 skip if Vx != Vy
+            if(VX_reg[insty.getSecondNibble()] != VX_reg[insty.getThirdNibble()]) {
+                pc += 2;
+            }
+            break;
         case 0x6: // 6XNN set register VX
             VX_reg[insty.getSecondNibble()] = insty.getSecondByte();
             break;
