@@ -10,9 +10,11 @@ namespace {
     std::default_random_engine randy(seed);
 } // Anonymous namespace
 
+constexpr uint16_t font_starting_address = 0x50;
+
 Chip8::Chip8() {
     // Font
-    auto font_address = emulated_memory.begin() + 0x050;
+    auto font_address = emulated_memory.begin() + font_starting_address;
 
     std::array<uint8_t, 80> font = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -184,6 +186,42 @@ void Chip8::fetchDecodeExecute() {
 
             frame_dirty = true;
         }
+            break;
+        case 0xF:
+            switch(insty.getSecondByte()) {
+                case 0x29: // FX29 font character
+                    {
+                    uint8_t x = VX_reg[insty.getSecondNibble()];
+                    I_reg = font_starting_address + 5*(x & 0xF);
+                    }
+                    break;
+                case 0x33: // FX33 decimal conversion
+                    {
+                    uint8_t number = VX_reg[insty.getSecondNibble()];
+                    emulated_memory[I_reg] = number / 100;
+                    emulated_memory[I_reg+1] = (number % 100) / 10;
+                    emulated_memory[I_reg+2] = number % 10;
+                    }
+                    break;
+                case 0x55: // FX55 store in memory
+                    {
+                    uint8_t x = insty.getSecondNibble();
+                    for(int i=0; i<=x; i++) {
+                        emulated_memory[I_reg+i] = VX_reg[i];
+                    }
+                    }
+                    break;
+                case 0x65: // FX65 load from memory
+                    {
+                    uint8_t x = insty.getSecondNibble();
+                    for(int i=0; i<=x; i++) {
+                        VX_reg[i] = emulated_memory[I_reg+i];
+                    }
+                    }
+                    break;
+                default:
+                    printf("Unhandled opcode %#6x\n", insty.whole);
+            }
             break;
         default:
             printf("Unhandled opcode %#6x\n", insty.whole);
