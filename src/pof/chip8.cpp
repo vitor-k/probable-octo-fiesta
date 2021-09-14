@@ -157,6 +157,9 @@ void Chip8::fetchDecodeExecute() {
         case 0xA: // ANNN set index register I
             I_reg = insty.getLastThreeNibbles();
             break;
+        case 0xB: // BNNN jump with offset
+            pc = insty.getLastThreeNibbles() + VX_reg[0];
+            break;
         case 0xC: // CXNN random
             VX_reg[insty.getSecondNibble()] = randy() & insty.getSecondByte();
             break;
