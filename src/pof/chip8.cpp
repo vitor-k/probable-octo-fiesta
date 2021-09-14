@@ -124,7 +124,7 @@ void Chip8::fetchDecodeExecute() {
                     {
                         uint8_t vx = VX_reg[insty.getSecondNibble()];
                         uint8_t vy = VX_reg[insty.getThirdNibble()];
-                        VX_reg[0xF] = (vx > vy);
+                        VX_reg[0xF] = (vx >= vy);
                         VX_reg[insty.getSecondNibble()] = vx - vy;
                     }
                     break;
@@ -132,7 +132,7 @@ void Chip8::fetchDecodeExecute() {
                     {
                         uint8_t vx = VX_reg[insty.getSecondNibble()];
                         uint8_t vy = VX_reg[insty.getThirdNibble()];
-                        VX_reg[0xF] = (vy > vx);
+                        VX_reg[0xF] = (vy >= vx);
                         VX_reg[insty.getSecondNibble()] = vy - vx;
                     }
                     break;
@@ -147,7 +147,7 @@ void Chip8::fetchDecodeExecute() {
 #ifndef CHIP8_NEW_SHIFT
                     VX_reg[insty.getSecondNibble()] = VX_reg[insty.getThirdNibble()];
 #endif
-                    VX_reg[0xF] = VX_reg[insty.getSecondNibble()] & 0x8 >> 7;
+                    VX_reg[0xF] = (VX_reg[insty.getSecondNibble()] & 0x80) >> 7;
                     VX_reg[insty.getSecondNibble()] = VX_reg[insty.getSecondNibble()] << 1;
                     break;
                 default:
