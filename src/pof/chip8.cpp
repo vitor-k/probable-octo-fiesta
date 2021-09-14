@@ -189,6 +189,11 @@ void Chip8::fetchDecodeExecute() {
             break;
         case 0xF:
             switch(insty.getSecondByte()) {
+                case 0x1E: // FX1E add to index
+                    {
+                    I_reg += VX_reg[insty.getSecondNibble()];
+                    }
+                    break;
                 case 0x29: // FX29 font character
                     {
                     uint8_t x = VX_reg[insty.getSecondNibble()];
