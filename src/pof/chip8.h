@@ -3,6 +3,7 @@
 #include <array>
 #include <stack>
 #include <cstdint>
+#include <mutex>
 
 //Native screen dimensions
 constexpr unsigned int nWidth = 64;
@@ -55,6 +56,7 @@ class Chip8 {
     public:
     Chip8();
     void fetchDecodeExecute();
+    void mainLoop();
     
     std::array<uint8_t, 4096> emulated_memory;
     uint16_t pc = 512; //12 bits
@@ -64,8 +66,14 @@ class Chip8 {
 
     std::stack<uint16_t> stack;
 
+    uint8_t delay_timer;
+    uint8_t sound_timer;
+
     std::array<bool, nWidth*nHeight> framebuffer;
     bool frame_dirty;
+    std::mutex frame_mutex;
+
+    bool running = true;
 };
 
 extern Chip8 global_chip;

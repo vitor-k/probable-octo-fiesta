@@ -60,8 +60,8 @@ SDL_impl::SDL_impl(){
 
 void SDL_impl::Present() {
     while (IsOpen()) {
-        global_chip.fetchDecodeExecute();
         if(global_chip.frame_dirty) {
+            global_chip.frame_mutex.lock();
             SDL_LockSurface(contentSurface);
             uint32_t *underlying_buffer = static_cast<uint32_t*>(contentSurface->pixels);
             for(int i=0; i < nHeight; i++){
@@ -75,6 +75,7 @@ void SDL_impl::Present() {
                 }
             }
             SDL_UnlockSurface(contentSurface);
+            global_chip.frame_mutex.unlock();
 
             global_chip.frame_dirty = false;
         }

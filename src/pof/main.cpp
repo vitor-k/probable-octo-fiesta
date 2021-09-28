@@ -122,11 +122,14 @@ int main(int argc, char* args[]) {
         file.close();
     }
 
-    std::thread thready([&impl]{impl->Present();});
+    std::thread presentThready([&impl]{impl->Present();});
+    std::thread mainThready(&Chip8::mainLoop, &global_chip);
     while(impl->IsOpen()){
         impl->PollEvents();
     }
-    thready.join();
+    global_chip.running = false;
+    mainThready.join();
+    presentThready.join();
 
     return 0;
 }

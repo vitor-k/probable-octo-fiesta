@@ -8,6 +8,9 @@ Chip8 global_chip;
 namespace {
     auto seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine randy(seed);
+
+    auto timer_previous_time = std::chrono::system_clock::now().time_since_epoch();
+    auto main_previous_time = std::chrono::system_clock::now().time_since_epoch();
 } // Anonymous namespace
 
 constexpr uint16_t font_starting_address = 0x50;
@@ -170,6 +173,7 @@ void Chip8::fetchDecodeExecute() {
             int n = insty.getFourthNibble();
             bool unset = false;
 
+            frame_mutex.lock();
             for(int i=0; i<n; i++) {
                 uint8_t sprite = emulated_memory[I_reg+i];
                 for(int j=0; j<8; j++) {
@@ -185,6 +189,7 @@ void Chip8::fetchDecodeExecute() {
                     }
                 }
             }
+            frame_mutex.unlock();
             VX_reg[0xF] = unset;
 
             frame_dirty = true;
@@ -192,6 +197,15 @@ void Chip8::fetchDecodeExecute() {
             break;
         case 0xF:
             switch(insty.getSecondByte()) {
+                case 0x07: // FX07 get delay timer
+                    VX_reg[insty.getSecondNibble()] = delay_timer;
+                    break;
+                case 0x15: // FX15 set delay timer
+                    delay_timer = VX_reg[insty.getSecondNibble()];
+                    break;
+                case 0x18: // FX18 set sound timer
+                    sound_timer = VX_reg[insty.getSecondNibble()];
+                    break;
                 case 0x1E: // FX1E add to index
                     {
                     I_reg += VX_reg[insty.getSecondNibble()];
@@ -233,5 +247,27 @@ void Chip8::fetchDecodeExecute() {
             break;
         default:
             printf("Unhandled opcode %#6x\n", insty.whole);
+    }
+}
+
+void Chip8::mainLoop() {
+    while(running) {
+        using namespace std::chrono;
+        auto current_time = system_clock::now().time_since_epoch();
+        if(duration_cast<microseconds>(current_time - timer_previous_time).count() > 16666) { // 60Hz, 16.666ms
+            if(delay_timer > 0) {
+                delay_timer--;
+            }
+            if(sound_timer > 0) {
+                sound_timer--;
+                puts("beep\n");
+            }
+            timer_previous_time = current_time;
+        }
+
+        if(duration_cast<microseconds>(current_time - main_previous_time).count() > 1428) { // 700Hz, 1.428ms
+            fetchDecodeExecute();
+            main_previous_time = current_time;
+        }
     }
 }
