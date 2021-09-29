@@ -1,9 +1,6 @@
 
 #ifdef _WIN32
-// windows.h needs to be included before shellapi.h
 #include <windows.h>
-
-#include <shellapi.h>
 #endif
 
 #undef _UNICODE
@@ -17,7 +14,6 @@
 #include <cstdint>
 #include <string>
 #include <thread>
-#include <memory>
 
 #include "sdl_impl.h"
 #include "chip8.h"
