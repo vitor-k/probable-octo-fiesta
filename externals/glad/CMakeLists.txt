@@ -4,7 +4,6 @@ add_library(glad STATIC
     include/glad/glad.h
 )
 
-create_target_directory_groups(glad)
 target_include_directories(glad PUBLIC "include/")
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")

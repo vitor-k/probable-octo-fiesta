@@ -6,8 +6,6 @@ add_executable(pof
     chip8.h
 )
 
-create_target_directory_groups(pof)
-
 target_link_libraries(pof PRIVATE ${PLATFORM_LIBRARIES} SDL2 glad getopt)
 
 if (MSVC)
