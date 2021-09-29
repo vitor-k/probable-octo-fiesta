@@ -75,6 +75,7 @@ void Chip8::fetchDecodeExecute() {
             else {
                 // 0NNN execute subroutine
                 // do not implement
+                printf("Unhandled opcode %#6x\n", insty.whole);
             }
             break;
         case 0x1: // 1NNN jump
@@ -169,7 +170,11 @@ void Chip8::fetchDecodeExecute() {
             I_reg = insty.getLastThreeNibbles();
             break;
         case 0xB: // BNNN jump with offset
+#ifdef CHIP8_QUIRKY_JUMP
+            pc = insty.getLastThreeNibbles() + VX_reg[insty.getSecondNibble()];
+#else
             pc = insty.getLastThreeNibbles() + VX_reg[0];
+#endif
             break;
         case 0xC: // CXNN random
             VX_reg[insty.getSecondNibble()] = randy() & insty.getSecondByte();
