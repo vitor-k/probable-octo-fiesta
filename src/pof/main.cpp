@@ -81,7 +81,7 @@ int main(int argc, char* args[]) {
 #ifdef _WIN32
             filename = UTF16ToUTF8(argv_w[optind]);
 #else
-            filepath = argv[optind];
+            filename = args[optind];
 #endif
             std::string extension = filename.substr(filename.rfind('.'));
 
