@@ -3,6 +3,8 @@
 #include <chrono>
 #include <random>
 
+#define CHIP8_NEW_SHIFT
+
 Chip8 global_chip;
 
 namespace {
