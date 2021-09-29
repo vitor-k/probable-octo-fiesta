@@ -61,6 +61,7 @@ int main(int argc, char* args[]) {
     std::string filename;
 
     static struct option long_options[] = {
+        {"slow", no_argument, 0, 's'},
         {"help", no_argument, 0, 'h'},
         {0, 0, 0, 0},
     };
@@ -69,6 +70,8 @@ int main(int argc, char* args[]) {
         int arg = getopt_long(argc, args, "h", long_options, &option_index);
         if (arg != -1) {
             switch (static_cast<char>(arg)) {
+            case 's':
+                global_chip.micro_wait = 2857; // 350Hz, 2.857ms
             case 'h':
                 printHelp(args[0]);
                 return 0;

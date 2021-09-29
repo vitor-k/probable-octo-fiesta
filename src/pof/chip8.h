@@ -71,6 +71,8 @@ class Chip8 {
     uint8_t delay_timer;
     uint8_t sound_timer;
 
+    uint32_t micro_wait = 1428; // default 700Hz, 1.428ms
+
     std::array<bool, nWidth*nHeight> framebuffer;
     bool frame_dirty; //indicates the framebuffer was modified
     std::mutex frame_mutex;

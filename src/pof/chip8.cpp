@@ -307,7 +307,7 @@ void Chip8::mainLoop() {
             timer_previous_time = current_time;
         }
 
-        if(duration_cast<microseconds>(current_time - main_previous_time).count() > 1428) { // 700Hz, 1.428ms
+        if(duration_cast<microseconds>(current_time - main_previous_time).count() > micro_wait) {
             fetchDecodeExecute();
             main_previous_time = current_time;
         }
