@@ -7,6 +7,8 @@ project(POF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(CMakeDependentOption)
+
 # set up output paths for executable binaries
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/$<CONFIG>)
 
@@ -17,7 +19,7 @@ endif()
 add_subdirectory(externals)
 add_subdirectory(src)
 
-option(DOWNLOAD_SDL2 "Download SDL2 binaries" ON)
+CMAKE_DEPENDENT_OPTION(DOWNLOAD_SDL2 "Download SDL2 binaries" ON "MSVC" OFF)
 
 if (DOWNLOAD_SDL2)
     set(SDL2_VER "2.0.12")
