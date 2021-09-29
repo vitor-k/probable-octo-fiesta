@@ -64,6 +64,8 @@ class Chip8 {
     uint16_t I_reg; //I registers
     uint8_t VX_reg[16]; //VX registers
 
+    bool key[16]; // pressed keys
+
     std::stack<uint16_t> stack;
 
     uint8_t delay_timer;

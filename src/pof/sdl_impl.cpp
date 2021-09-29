@@ -1,4 +1,6 @@
 #include <cstdio>
+#include <map>
+
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <glad/glad.h>
@@ -105,6 +107,30 @@ void SDL_impl::Present() {
     }
 }
 
+void DecodeKey(SDL_KeyboardEvent event) {
+    const std::map<SDL_Scancode, uint8_t> keymap {
+        {SDL_SCANCODE_1,0x1},
+        {SDL_SCANCODE_2,0x2},
+        {SDL_SCANCODE_3,0x3},
+        {SDL_SCANCODE_4,0xC},
+        {SDL_SCANCODE_Q,0x4},
+        {SDL_SCANCODE_W,0x5},
+        {SDL_SCANCODE_E,0x6},
+        {SDL_SCANCODE_R,0xD},
+        {SDL_SCANCODE_A,0x7},
+        {SDL_SCANCODE_S,0x8},
+        {SDL_SCANCODE_D,0x9},
+        {SDL_SCANCODE_F,0xE},
+        {SDL_SCANCODE_Z,0xA},
+        {SDL_SCANCODE_X,0x0},
+        {SDL_SCANCODE_C,0xB},
+        {SDL_SCANCODE_V,0xF},
+    };
+    if(!event.repeat) {
+        global_chip.key[keymap.at(event.keysym.scancode)] = (event.state == SDL_PRESSED);
+    }
+}
+
 void SDL_impl::PollEvents() {
     SDL_Event event;
 
@@ -113,16 +139,13 @@ void SDL_impl::PollEvents() {
         switch (event.type) {
         case SDL_KEYDOWN:
         case SDL_KEYUP:
+            DecodeKey(event.key);
             break;
         case SDL_MOUSEBUTTONUP:
             break;
         case SDL_WINDOWEVENT:
-            switch (event.window.event) {
-            case SDL_WINDOWEVENT_RESIZED:
-                break;
-            case SDL_WINDOWEVENT_CLOSE:
+            if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
                 is_open = false;
-
             }
             break;
         case SDL_QUIT:

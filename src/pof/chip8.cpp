@@ -195,6 +195,21 @@ void Chip8::fetchDecodeExecute() {
             frame_dirty = true;
         }
             break;
+        case 0xE:
+            if(insty.getSecondByte() == 0x9E) { // EX9E
+                if(key[VX_reg[insty.getSecondNibble()]]) {
+                    pc += 2;
+                }
+            }
+            else if(insty.getSecondByte() == 0xA1) { // EXA1
+                if(!key[VX_reg[insty.getSecondNibble()]]) {
+                    pc += 2;
+                }
+            }
+            else {
+                printf("Unhandled opcode %#6x\n", insty.whole);
+            }
+            break;
         case 0xF:
             switch(insty.getSecondByte()) {
                 case 0x07: // FX07 get delay timer
@@ -205,6 +220,20 @@ void Chip8::fetchDecodeExecute() {
                     break;
                 case 0x18: // FX18 set sound timer
                     sound_timer = VX_reg[insty.getSecondNibble()];
+                    break;
+                case 0x0A: // FX0A get key
+                    {
+                        bool pressed = false;
+                        for (int i=0; i<16; i++) {
+                            if(key[i]){
+                                pressed = true;
+                                VX_reg[insty.getSecondNibble()] = i;
+                                break;
+                            }
+                        }
+                        if(!pressed)
+                            pc-=2;
+                    }
                     break;
                 case 0x1E: // FX1E add to index
                     {
