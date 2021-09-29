@@ -126,7 +126,7 @@ void DecodeKey(SDL_KeyboardEvent event) {
         {SDL_SCANCODE_C,0xB},
         {SDL_SCANCODE_V,0xF},
     };
-    if(!event.repeat) {
+    if(keymap.count(event.keysym.scancode) && !event.repeat) {
         global_chip.key[keymap.at(event.keysym.scancode)] = (event.state == SDL_PRESSED);
     }
 }
