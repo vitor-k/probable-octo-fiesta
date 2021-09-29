@@ -13,12 +13,12 @@ const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
 SDL_impl::SDL_impl(){
-    background.r=0;
-    background.g=0;
-    background.b=0;
-    foreground.r=0x00;
-    foreground.g=0x8F;
-    foreground.b=0x11;
+    background.r = 0;
+    background.g = 0;
+    background.b = 0;
+    foreground.r = 0x00;
+    foreground.g = 0x8F;
+    foreground.b = 0x11;
     bg.r = 0xE0;
     bg.g = 0xE0;
     bg.b = 0xE0;
@@ -108,23 +108,23 @@ void SDL_impl::Present() {
 }
 
 void DecodeKey(SDL_KeyboardEvent event) {
-    const std::map<SDL_Scancode, uint8_t> keymap {
-        {SDL_SCANCODE_1,0x1},
-        {SDL_SCANCODE_2,0x2},
-        {SDL_SCANCODE_3,0x3},
-        {SDL_SCANCODE_4,0xC},
-        {SDL_SCANCODE_Q,0x4},
-        {SDL_SCANCODE_W,0x5},
-        {SDL_SCANCODE_E,0x6},
-        {SDL_SCANCODE_R,0xD},
-        {SDL_SCANCODE_A,0x7},
-        {SDL_SCANCODE_S,0x8},
-        {SDL_SCANCODE_D,0x9},
-        {SDL_SCANCODE_F,0xE},
-        {SDL_SCANCODE_Z,0xA},
-        {SDL_SCANCODE_X,0x0},
-        {SDL_SCANCODE_C,0xB},
-        {SDL_SCANCODE_V,0xF},
+    static const std::map<SDL_Scancode, uint8_t> keymap {
+        {SDL_SCANCODE_1, 0x1},
+        {SDL_SCANCODE_2, 0x2},
+        {SDL_SCANCODE_3, 0x3},
+        {SDL_SCANCODE_4, 0xC},
+        {SDL_SCANCODE_Q, 0x4},
+        {SDL_SCANCODE_W, 0x5},
+        {SDL_SCANCODE_E, 0x6},
+        {SDL_SCANCODE_R, 0xD},
+        {SDL_SCANCODE_A, 0x7},
+        {SDL_SCANCODE_S, 0x8},
+        {SDL_SCANCODE_D, 0x9},
+        {SDL_SCANCODE_F, 0xE},
+        {SDL_SCANCODE_Z, 0xA},
+        {SDL_SCANCODE_X, 0x0},
+        {SDL_SCANCODE_C, 0xB},
+        {SDL_SCANCODE_V, 0xF},
     };
     if(keymap.count(event.keysym.scancode) && !event.repeat) {
         global_chip.key[keymap.at(event.keysym.scancode)] = (event.state == SDL_PRESSED);
@@ -159,7 +159,7 @@ void SDL_impl::PollEvents() {
 }
 
 bool SDL_impl::IsOpen() {
-    return is_open;
+    return is_open && global_chip.is_running;
 }
 
 SDL_impl::~SDL_impl(){

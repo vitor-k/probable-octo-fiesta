@@ -61,7 +61,7 @@ class Chip8 {
     std::array<uint8_t, 4096> emulated_memory;
     uint16_t pc = 512; //12 bits
 
-    uint16_t I_reg; //I registers
+    uint16_t I_reg; //I register
     uint8_t VX_reg[16]; //VX registers
 
     bool key[16]; // pressed keys
@@ -72,10 +72,10 @@ class Chip8 {
     uint8_t sound_timer;
 
     std::array<bool, nWidth*nHeight> framebuffer;
-    bool frame_dirty;
+    bool frame_dirty; //indicates the framebuffer was modified
     std::mutex frame_mutex;
 
-    bool running = true;
+    bool is_running = true;
 };
 
 extern Chip8 global_chip;

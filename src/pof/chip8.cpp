@@ -21,7 +21,7 @@ Chip8::Chip8() {
     // Font
     auto font_address = emulated_memory.begin() + font_starting_address;
 
-    std::array<uint8_t, 80> font = {
+    constexpr std::array<uint8_t, 80> font = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
     0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
@@ -45,6 +45,12 @@ Chip8::Chip8() {
 }
 
 void Chip8::fetchDecodeExecute() {
+    if (pc >= 4096) {
+        puts("Out of bounds pc\n");
+        is_running = false;
+        return;
+    }
+
     //fetch
     Instruction insty(emulated_memory[pc], emulated_memory[pc+1]);
 
@@ -282,7 +288,7 @@ void Chip8::fetchDecodeExecute() {
 }
 
 void Chip8::mainLoop() {
-    while(running) {
+    while(is_running) {
         using namespace std::chrono;
         auto current_time = system_clock::now().time_since_epoch();
         if(duration_cast<microseconds>(current_time - timer_previous_time).count() > 16666) { // 60Hz, 16.666ms

@@ -123,7 +123,7 @@ int main(int argc, char* args[]) {
     while(impl->IsOpen()){
         impl->PollEvents();
     }
-    global_chip.running = false;
+    global_chip.is_running = false;
     mainThready.join();
     presentThready.join();
 
