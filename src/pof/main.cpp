@@ -9,11 +9,12 @@
 #include <unistd.h>
 #endif
 
-#include <iostream>
 #include <fstream>
 #include <cstdint>
 #include <string>
 #include <thread>
+
+#include <fmt/core.h>
 
 #include "sdl_impl.h"
 #include "chip8.h"
@@ -38,9 +39,9 @@ std::string UTF16ToUTF8(const std::wstring& input) {
 #endif
 
 static void printHelp(const char* argv0) {
-    std::cout << "Usage: " << argv0
-              << " [options] <filename>\n"
-                 "-h, --help            Display this help text and exit\n";
+    fmt::print("Usage: {} [options] <filename>\n"
+               "-h, --help            Display this help text and exit\n",
+               argv0);
 }
 
 int main(int argc, char* args[]) {
@@ -52,7 +53,7 @@ int main(int argc, char* args[]) {
     auto argv_w = CommandLineToArgvW(GetCommandLineW(), &argc_w);
 
     if (argv_w == nullptr) {
-        std::cout << "Failed to get command line arguments" << std::endl;
+        fmt::print("Failed to get command line arguments\n");
         return -1;
     }
 #endif
@@ -89,7 +90,7 @@ int main(int argc, char* args[]) {
     }
 
     if (filename.empty()) {
-        std::cout << "Filename not provided. Printing help." << std::endl;
+        fmt::print("Filename not provided. Printing help.\n");
         printHelp(args[0]);
         return 0;
     }
@@ -102,18 +103,18 @@ int main(int argc, char* args[]) {
         file.seekg (0, file.beg);
 
         if (length < 4096 - 512) {
-            std::cout << "Reading " << length << " bytes... " << std::endl;
+            fmt::print("Reading {} bytes...\n", length);
             file.read((char*) &global_chip.emulated_memory[512], length);
 
             if (file) {
-                std::cout << "all characters read successfully." << std::endl;
+                fmt::print("all characters read successfully.\n");
             }
             else {
-                std::cout << "error: only " << file.gcount() << " could be read" << std::endl;
+                fmt::print("error: only {} could be read.\n", file.gcount());
             }
         }
         else {
-            std::cout << "File too big" << std::endl;
+            fmt::print("File too big.\n");
             file.close();
             return 0;
         }

@@ -1,9 +1,10 @@
-#include <cstdio>
 #include <map>
 
 #define SDL_MAIN_HANDLED
 #include <SDL.h>
 #include <glad/glad.h>
+
+#include <fmt/core.h>
 
 #include "sdl_impl.h"
 #include "chip8.h"
@@ -25,12 +26,12 @@ SDL_impl::SDL_impl(){
 
     //Initialize SDL
     if( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
-        printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
+        fmt::print( "SDL could not initialize! SDL_Error: {}\n", SDL_GetError() );
     }
     //Create window
     window = SDL_CreateWindow( "POF", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if( window == NULL ) {
-        printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
+        fmt::print( "Window could not be created! SDL_Error: {}\n", SDL_GetError() );
     }
     else {
         is_open = true;
@@ -39,11 +40,11 @@ SDL_impl::SDL_impl(){
         SDL_GLContext context = SDL_GL_CreateContext(window);
 
         if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
-            printf("Failed to initialize OpenGL context\n");
+            fmt::print("Failed to initialize OpenGL context\n");
         }
-        printf("OpenGL Version %d.%d loaded\n", GLVersion.major, GLVersion.minor);
-        printf("%s\n", glGetString(GL_VERSION));
-        printf("%s\n", glGetString(GL_VENDOR));
+        fmt::print("OpenGL Version {}.{} loaded\n", GLVersion.major, GLVersion.minor);
+        fmt::print("{}\n", glGetString(GL_VERSION));
+        fmt::print("{}\n", glGetString(GL_VENDOR));
 
         SDL_GL_DeleteContext(context);
 

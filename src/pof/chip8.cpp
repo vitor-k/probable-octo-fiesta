@@ -1,7 +1,8 @@
 #include "chip8.h"
-#include <cstdio>
 #include <chrono>
 #include <random>
+
+#include <fmt/core.h>
 
 #define CHIP8_NEW_SHIFT
 
@@ -46,7 +47,7 @@ Chip8::Chip8() {
 
 void Chip8::fetchDecodeExecute() {
     if (pc >= 4096) {
-        puts("Out of bounds pc\n");
+        fmt::print("Out of bounds pc\n");
         is_running = false;
         return;
     }
@@ -75,7 +76,7 @@ void Chip8::fetchDecodeExecute() {
             else {
                 // 0NNN execute subroutine
                 // do not implement
-                printf("Unhandled opcode %#6x\n", insty.whole);
+                fmt::print("Unhandled opcode {:#06x}\n", insty.whole);
             }
             break;
         case 0x1: // 1NNN jump
@@ -163,7 +164,7 @@ void Chip8::fetchDecodeExecute() {
                     VX_reg[insty.getSecondNibble()] = VX_reg[insty.getSecondNibble()] << 1;
                     break;
                 default:
-                    printf("Unhandled opcode %#6x\n", insty.whole);
+                    fmt::print("Unhandled opcode {:#06x}\n", insty.whole);
             }
             break;
         case 0xA: // ANNN set index register I
@@ -220,7 +221,7 @@ void Chip8::fetchDecodeExecute() {
                 }
             }
             else {
-                printf("Unhandled opcode %#6x\n", insty.whole);
+                fmt::print("Unhandled opcode {:#06x}\n", insty.whole);
             }
             break;
         case 0xF:
@@ -284,11 +285,11 @@ void Chip8::fetchDecodeExecute() {
                     }
                     break;
                 default:
-                    printf("Unhandled opcode %#6x\n", insty.whole);
+                    fmt::print("Unhandled opcode {:#06x}\n", insty.whole);
             }
             break;
         default:
-            printf("Unhandled opcode %#6x\n", insty.whole);
+            fmt::print("Unhandled opcode {:#06x}\n", insty.whole);
     }
 }
 
@@ -302,7 +303,7 @@ void Chip8::mainLoop() {
             }
             if(sound_timer > 0) {
                 sound_timer--;
-                puts("beep\n");
+                fmt::print("beep\n");
             }
             timer_previous_time = current_time;
         }
