@@ -55,21 +55,11 @@ struct Instruction {
 class Chip8 {
     public:
     Chip8();
-    void fetchDecodeExecute();
     void mainLoop();
     
     std::array<uint8_t, 4096> emulated_memory;
-    uint16_t pc = 512; //12 bits
-
-    uint16_t I_reg; //I register
-    uint8_t VX_reg[16]; //VX registers
 
     bool key[16]; // pressed keys
-
-    std::stack<uint16_t> stack;
-
-    uint8_t delay_timer;
-    uint8_t sound_timer;
 
     uint32_t micro_wait = 1428; // default 700Hz, 1.428ms
 
@@ -78,6 +68,20 @@ class Chip8 {
     std::mutex frame_mutex;
 
     bool is_running = true;
+
+    private:
+    void fetchDecodeExecute();
+    void beep();
+
+    uint16_t pc = 512; //12 bits
+
+    uint16_t I_reg; //I register
+    uint8_t VX_reg[16]; //VX registers
+
+    std::stack<uint16_t> stack;
+
+    uint8_t delay_timer;
+    uint8_t sound_timer;
 };
 
 extern Chip8 global_chip;
