@@ -282,6 +282,9 @@ void Chip8::fetchDecodeExecute() {
                     for(int i=0; i<=x; i++) {
                         emulated_memory[I_reg+i] = VX_reg[i];
                     }
+#ifdef CHIP8_LOAD_STORE
+                    I_reg += x;
+#endif
                     }
                     break;
                 case 0x65: // FX65 load from memory
@@ -290,6 +293,9 @@ void Chip8::fetchDecodeExecute() {
                     for(int i=0; i<=x; i++) {
                         VX_reg[i] = emulated_memory[I_reg+i];
                     }
+#ifdef CHIP8_LOAD_STORE
+                    I_reg += x;
+#endif
                     }
                     break;
                 default:
