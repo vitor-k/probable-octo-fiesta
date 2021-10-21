@@ -218,12 +218,12 @@ void Chip8::fetchDecodeExecute() {
         }
             break;
         case 0xE:
-            if(insty.getSecondByte() == 0x9E) { // EX9E
+            if(insty.getSecondByte() == 0x9E) { // EX9E skip if key pressed
                 if(key[VX_reg[insty.getSecondNibble()]]) {
                     pc += 2;
                 }
             }
-            else if(insty.getSecondByte() == 0xA1) { // EXA1
+            else if(insty.getSecondByte() == 0xA1) { // EXA1 skip if key not pressed
                 if(!key[VX_reg[insty.getSecondNibble()]]) {
                     pc += 2;
                 }
