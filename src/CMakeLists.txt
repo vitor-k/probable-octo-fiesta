@@ -14,4 +14,5 @@ else()
     add_compile_options(-Wall)
 endif()
 
+add_subdirectory(core)
 add_subdirectory(pof)

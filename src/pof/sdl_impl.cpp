@@ -7,7 +7,7 @@
 #include <fmt/core.h>
 
 #include "sdl_impl.h"
-#include "chip8.h"
+#include "core/chip8.h"
 
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;

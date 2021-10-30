@@ -17,7 +17,7 @@
 #include <fmt/core.h>
 
 #include "sdl_impl.h"
-#include "chip8.h"
+#include "core/chip8.h"
 
 #ifdef _WIN32
 std::string UTF16ToUTF8(const std::wstring& input) {
