@@ -18,6 +18,49 @@ namespace {
 
 constexpr uint16_t font_starting_address = 0x50;
 
+struct Instruction {
+    uint16_t whole;
+
+    Instruction(uint8_t a, uint8_t b) {
+        whole = static_cast<uint16_t>(a) << 8 | b;
+    }
+
+    template<int N>
+    constexpr uint8_t getNibble() {
+        return (whole >> (4*N)) & 0xF;
+    }
+
+    constexpr uint8_t getFirstNibble() {
+        return getNibble<3>();
+    }
+    constexpr uint8_t getSecondNibble() {
+        return getNibble<2>();
+    }
+    constexpr uint8_t getThirdNibble() {
+        return getNibble<1>();
+    }
+    constexpr uint8_t getFourthNibble() {
+        return getNibble<0>();
+    }
+
+    constexpr uint16_t getLastThreeNibbles() {
+        return whole & 0xFFF;
+    }
+
+    template<int N>
+    constexpr uint8_t getByte() {
+        return (whole >> (8*N)) & 0xFF;
+    }
+
+    constexpr uint8_t getFirstByte() {
+        return getByte<1>();
+    }
+    constexpr uint8_t getSecondByte() {
+        return getByte<0>();
+    }
+
+};
+
 void printUnhandledOpcode(Instruction opcode) {
     fmt::print("Unhandled opcode {:#06x}\n", opcode.whole);
 }
