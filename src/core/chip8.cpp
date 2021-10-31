@@ -6,8 +6,6 @@
 
 #define CHIP8_NEW_SHIFT
 
-Chip8 global_chip;
-
 namespace {
     auto seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine randy(seed);

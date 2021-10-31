@@ -7,11 +7,19 @@
 #include <mutex>
 #include <random>
 
+#if !defined(_WIN32) || defined(STATIC_CORE_BUILD)
+#define EXPORT
+#elif defined(SHARED_CORE_BUILD)
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT __declspec(dllimport)
+#endif
+
 //Native screen dimensions
 constexpr unsigned int nWidth = 64;
 constexpr unsigned int nHeight = 32;
 
-class Chip8 {
+class EXPORT Chip8 {
     public:
     Chip8();
     void mainLoop();
@@ -58,7 +66,5 @@ class Chip8 {
 
     bool is_running = true;
 
-    friend void loadChip8Program(Chip8& chip, std::string filename);
+    friend void EXPORT loadChip8Program(Chip8& chip, std::string filename);
 };
-
-extern Chip8 global_chip;

@@ -9,7 +9,6 @@
 #include <unistd.h>
 #endif
 
-#include <fstream>
 #include <cstdint>
 #include <string>
 #include <thread>
@@ -59,7 +58,8 @@ int main(int argc, char* args[]) {
     }
 #endif
 
-    std::unique_ptr<SDL_impl> impl{std::make_unique<SDL_impl>()};
+    Chip8 chip;
+    std::unique_ptr<SDL_impl> impl = std::make_unique<SDL_impl>(chip);
     std::string filename;
 
     static struct option long_options[] = {
@@ -73,7 +73,7 @@ int main(int argc, char* args[]) {
         if (arg != -1) {
             switch (static_cast<char>(arg)) {
             case 's':
-                global_chip.setCoreFrequency(350); // 350Hz, 2.857ms
+                chip.setCoreFrequency(350); // 350Hz, 2.857ms
             case 'h':
                 printHelp(args[0]);
                 return 0;
@@ -96,14 +96,14 @@ int main(int argc, char* args[]) {
         return 0;
     }
 
-    loadChip8Program(global_chip, filename);
+    loadChip8Program(chip, filename);
 
     std::thread presentThready([&impl]{impl->Present();});
-    std::thread mainThready(&Chip8::mainLoop, &global_chip);
+    std::thread mainThready(&Chip8::mainLoop, &chip);
     while(impl->IsOpen()){
         impl->PollEvents();
     }
-    global_chip.shutDown();
+    chip.shutDown();
     mainThready.join();
     presentThready.join();
 

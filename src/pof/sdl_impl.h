@@ -3,6 +3,7 @@
 
 struct SDL_Window;
 struct SDL_Surface;
+class Chip8;
 
 struct Color{
     char r;
@@ -12,7 +13,7 @@ struct Color{
 
 class SDL_impl{
 public:
-    SDL_impl();
+    SDL_impl(Chip8& chip);
     ~SDL_impl();
     
     void PollEvents();
@@ -29,4 +30,6 @@ private:
     SDL_Surface* contentSurface;
 
     bool is_open;
+
+    Chip8& chip;
 };

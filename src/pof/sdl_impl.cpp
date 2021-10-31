@@ -34,7 +34,7 @@ namespace {
     };
 } // Anonymous namespace
 
-SDL_impl::SDL_impl(){
+SDL_impl::SDL_impl(Chip8& chip) : chip(chip){
     background.r = 0;
     background.g = 0;
     background.b = 0;
@@ -84,13 +84,13 @@ SDL_impl::SDL_impl(){
 
 void SDL_impl::Present() {
     while (IsOpen()) {
-        if(global_chip.isFrameDirty()) {
-            global_chip.frame_mutex.lock();
+        if(chip.isFrameDirty()) {
+            chip.frame_mutex.lock();
             SDL_LockSurface(contentSurface);
             uint32_t *underlying_buffer = static_cast<uint32_t*>(contentSurface->pixels);
             for(int i=0; i < nHeight; i++){
                 for(int j=0; j < nWidth; j++){
-                    if(global_chip.frameAt(j,i)) {
+                    if(chip.frameAt(j,i)) {
                         underlying_buffer[i*nWidth + j] = SDL_MapRGB(contentSurface->format, foreground.r, foreground.g, foreground.b);
                     }
                     else {
@@ -99,9 +99,9 @@ void SDL_impl::Present() {
                 }
             }
             SDL_UnlockSurface(contentSurface);
-            global_chip.frame_mutex.unlock();
+            chip.frame_mutex.unlock();
 
-            global_chip.clearDirty();
+            chip.clearDirty();
         }
 
         SDL_Surface *const screenSurface = SDL_GetWindowSurface( window );
@@ -138,7 +138,7 @@ void SDL_impl::PollEvents() {
         case SDL_KEYDOWN:
         case SDL_KEYUP:
             if(keymap.count(event.key.keysym.scancode) && !event.key.repeat) {
-                global_chip.setKey(keymap.at(event.key.keysym.scancode), (event.key.state == SDL_PRESSED));
+                chip.setKey(keymap.at(event.key.keysym.scancode), (event.key.state == SDL_PRESSED));
             }
             break;
         case SDL_MOUSEBUTTONUP:
@@ -159,7 +159,7 @@ void SDL_impl::PollEvents() {
 }
 
 bool SDL_impl::IsOpen() {
-    return is_open && global_chip.isRunning();
+    return is_open && chip.isRunning();
 }
 
 SDL_impl::~SDL_impl(){
