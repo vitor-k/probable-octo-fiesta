@@ -9,9 +9,30 @@
 #include "sdl_impl.h"
 #include "core/chip8.h"
 
-//Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+namespace {
+    //Screen dimension constants
+    constexpr int SCREEN_WIDTH = 640;
+    constexpr int SCREEN_HEIGHT = 480;
+
+    static const std::map<SDL_Scancode, uint8_t> keymap {
+        {SDL_SCANCODE_1, 0x1},
+        {SDL_SCANCODE_2, 0x2},
+        {SDL_SCANCODE_3, 0x3},
+        {SDL_SCANCODE_4, 0xC},
+        {SDL_SCANCODE_Q, 0x4},
+        {SDL_SCANCODE_W, 0x5},
+        {SDL_SCANCODE_E, 0x6},
+        {SDL_SCANCODE_R, 0xD},
+        {SDL_SCANCODE_A, 0x7},
+        {SDL_SCANCODE_S, 0x8},
+        {SDL_SCANCODE_D, 0x9},
+        {SDL_SCANCODE_F, 0xE},
+        {SDL_SCANCODE_Z, 0xA},
+        {SDL_SCANCODE_X, 0x0},
+        {SDL_SCANCODE_C, 0xB},
+        {SDL_SCANCODE_V, 0xF},
+    };
+} // Anonymous namespace
 
 SDL_impl::SDL_impl(){
     background.r = 0;
@@ -63,13 +84,13 @@ SDL_impl::SDL_impl(){
 
 void SDL_impl::Present() {
     while (IsOpen()) {
-        if(global_chip.frame_dirty) {
+        if(global_chip.isFrameDirty()) {
             global_chip.frame_mutex.lock();
             SDL_LockSurface(contentSurface);
             uint32_t *underlying_buffer = static_cast<uint32_t*>(contentSurface->pixels);
             for(int i=0; i < nHeight; i++){
                 for(int j=0; j < nWidth; j++){
-                    if(global_chip.framebuffer[i*nWidth + j]) {
+                    if(global_chip.frameAt(j,i)) {
                         underlying_buffer[i*nWidth + j] = SDL_MapRGB(contentSurface->format, foreground.r, foreground.g, foreground.b);
                     }
                     else {
@@ -80,7 +101,7 @@ void SDL_impl::Present() {
             SDL_UnlockSurface(contentSurface);
             global_chip.frame_mutex.unlock();
 
-            global_chip.frame_dirty = false;
+            global_chip.clearDirty();
         }
 
         SDL_Surface *const screenSurface = SDL_GetWindowSurface( window );
@@ -108,30 +129,6 @@ void SDL_impl::Present() {
     }
 }
 
-void DecodeKey(SDL_KeyboardEvent event) {
-    static const std::map<SDL_Scancode, uint8_t> keymap {
-        {SDL_SCANCODE_1, 0x1},
-        {SDL_SCANCODE_2, 0x2},
-        {SDL_SCANCODE_3, 0x3},
-        {SDL_SCANCODE_4, 0xC},
-        {SDL_SCANCODE_Q, 0x4},
-        {SDL_SCANCODE_W, 0x5},
-        {SDL_SCANCODE_E, 0x6},
-        {SDL_SCANCODE_R, 0xD},
-        {SDL_SCANCODE_A, 0x7},
-        {SDL_SCANCODE_S, 0x8},
-        {SDL_SCANCODE_D, 0x9},
-        {SDL_SCANCODE_F, 0xE},
-        {SDL_SCANCODE_Z, 0xA},
-        {SDL_SCANCODE_X, 0x0},
-        {SDL_SCANCODE_C, 0xB},
-        {SDL_SCANCODE_V, 0xF},
-    };
-    if(keymap.count(event.keysym.scancode) && !event.repeat) {
-        global_chip.key[keymap.at(event.keysym.scancode)] = (event.state == SDL_PRESSED);
-    }
-}
-
 void SDL_impl::PollEvents() {
     SDL_Event event;
 
@@ -140,7 +137,9 @@ void SDL_impl::PollEvents() {
         switch (event.type) {
         case SDL_KEYDOWN:
         case SDL_KEYUP:
-            DecodeKey(event.key);
+            if(keymap.count(event.key.keysym.scancode) && !event.key.repeat) {
+                global_chip.setKey(keymap.at(event.key.keysym.scancode), (event.key.state == SDL_PRESSED));
+            }
             break;
         case SDL_MOUSEBUTTONUP:
             break;
@@ -160,7 +159,7 @@ void SDL_impl::PollEvents() {
 }
 
 bool SDL_impl::IsOpen() {
-    return is_open && global_chip.is_running;
+    return is_open && global_chip.isRunning();
 }
 
 SDL_impl::~SDL_impl(){

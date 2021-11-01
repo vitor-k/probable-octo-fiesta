@@ -14,9 +14,29 @@ namespace {
 
     auto timer_previous_time = std::chrono::system_clock::now().time_since_epoch();
     auto main_previous_time = std::chrono::system_clock::now().time_since_epoch();
-} // Anonymous namespace
 
-constexpr uint16_t font_starting_address = 0x50;
+    constexpr std::array<uint8_t, 80> font = {
+    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+    0x20, 0x60, 0x20, 0x20, 0x70, // 1
+    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+    0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+    };
+
+    constexpr uint16_t font_starting_address = 0x50;
+
+} // Anonymous namespace
 
 struct Instruction {
     uint16_t whole;
@@ -69,31 +89,54 @@ Chip8::Chip8() {
     // Font
     auto font_address = emulated_memory.begin() + font_starting_address;
 
-    constexpr std::array<uint8_t, 80> font = {
-    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-    0x20, 0x60, 0x20, 0x20, 0x70, // 1
-    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-    0xF0, 0x80, 0xF0, 0x80, 0x80  // F
-    };
-
     std::copy(font.begin(), font.end(), font_address);
-
 }
 
 void Chip8::beep() {
     fmt::print("beep\n");
+}
+
+void Chip8::setKey(uint8_t n, bool state) {
+    if (n <= 0xF) {
+        key[n] = state;
+    }
+}
+
+void Chip8::setCoreFrequency(int f) {
+    micro_wait = 1000000 / f;
+}
+
+bool Chip8::frameAt(uint8_t x, uint8_t y) const {
+    return framebuffer[y*nWidth + x];
+}
+
+bool Chip8::isFrameDirty() const {
+    return frame_dirty;
+}
+
+void Chip8::clearDirty() {
+    frame_dirty = false;
+}
+
+bool Chip8::isRunning() const {
+    return is_running;
+}
+
+void Chip8::shutDown() {
+    is_running = false;
+}
+
+void Chip8::tickDelayTimer() {
+    if (delay_timer > 0) {
+        delay_timer--;
+    }
+}
+
+void Chip8::tickSoundTimer() {
+    if (sound_timer > 0) {
+        sound_timer--;
+        beep();
+    }
 }
 
 void Chip8::fetchDecodeExecute() {
@@ -355,13 +398,8 @@ void Chip8::mainLoop() {
         using namespace std::chrono;
         auto current_time = system_clock::now().time_since_epoch();
         if(duration_cast<microseconds>(current_time - timer_previous_time).count() > 16666) { // 60Hz, 16.666ms
-            if(delay_timer > 0) {
-                delay_timer--;
-            }
-            if(sound_timer > 0) {
-                sound_timer--;
-                beep();
-            }
+            tickDelayTimer();
+            tickSoundTimer();
             timer_previous_time = current_time;
         }
 

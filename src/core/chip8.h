@@ -1,9 +1,11 @@
 #pragma once
 
 #include <array>
+#include <chrono>
 #include <stack>
 #include <cstdint>
 #include <mutex>
+#include <random>
 
 //Native screen dimensions
 constexpr unsigned int nWidth = 64;
@@ -16,18 +18,26 @@ class Chip8 {
     
     std::array<uint8_t, 4096> emulated_memory;
 
-    bool key[16]; // pressed keys
+    void setKey(uint8_t n, bool state);
 
-    uint32_t micro_wait = 1428; // default 700Hz, 1.428ms
+    void setCoreFrequency(int f);
 
-    std::array<bool, nWidth*nHeight> framebuffer;
+    bool frameAt(uint8_t x, uint8_t y) const;
+
     bool frame_dirty; //indicates the framebuffer was modified
+    bool isFrameDirty() const;
+    void clearDirty();
+
     std::mutex frame_mutex;
 
-    bool is_running = true;
+    bool isRunning() const;
+    void shutDown();
+
+    void tickDelayTimer();
+    void tickSoundTimer();
+    void fetchDecodeExecute();
 
     private:
-    void fetchDecodeExecute();
     void beep();
 
     uint16_t pc = 512; //12 bits
@@ -39,6 +49,15 @@ class Chip8 {
 
     uint8_t delay_timer;
     uint8_t sound_timer;
+
+    bool key[16]; // pressed keys
+
+    std::array<bool, nWidth*nHeight> framebuffer;
+
+    uint32_t micro_wait = 1428; // default 700Hz, 1.428ms
+
+    bool is_running = true;
+
 };
 
 extern Chip8 global_chip;

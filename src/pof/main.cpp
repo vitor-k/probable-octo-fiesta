@@ -73,7 +73,7 @@ int main(int argc, char* args[]) {
         if (arg != -1) {
             switch (static_cast<char>(arg)) {
             case 's':
-                global_chip.micro_wait = 2857; // 350Hz, 2.857ms
+                global_chip.setCoreFrequency(350); // 350Hz, 2.857ms
             case 'h':
                 printHelp(args[0]);
                 return 0;
@@ -103,7 +103,7 @@ int main(int argc, char* args[]) {
     while(impl->IsOpen()){
         impl->PollEvents();
     }
-    global_chip.is_running = false;
+    global_chip.shutDown();
     mainThready.join();
     presentThready.join();
 
