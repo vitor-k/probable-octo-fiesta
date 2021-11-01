@@ -18,6 +18,7 @@
 
 #include "sdl_impl.h"
 #include "core/chip8.h"
+#include "core/loader.h"
 
 #ifdef _WIN32
 std::string UTF16ToUTF8(const std::wstring& input) {
@@ -95,32 +96,7 @@ int main(int argc, char* args[]) {
         return 0;
     }
 
-    std::ifstream file(filename, std::ios::in | std::ios::binary);
-    if (file.is_open()) {
-        // get length of file:
-        file.seekg (0, file.end);
-        int length = file.tellg();
-        file.seekg (0, file.beg);
-
-        if (length < 4096 - 512) {
-            fmt::print("Reading {} bytes...\n", length);
-            file.read((char*) &global_chip.emulated_memory[512], length);
-
-            if (file) {
-                fmt::print("all characters read successfully.\n");
-            }
-            else {
-                fmt::print("error: only {} could be read.\n", file.gcount());
-            }
-        }
-        else {
-            fmt::print("File too big.\n");
-            file.close();
-            return 0;
-        }
-
-        file.close();
-    }
+    loadChip8Program(global_chip, filename);
 
     std::thread presentThready([&impl]{impl->Present();});
     std::thread mainThready(&Chip8::mainLoop, &global_chip);
