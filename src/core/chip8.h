@@ -15,8 +15,6 @@ class Chip8 {
     public:
     Chip8();
     void mainLoop();
-    
-    std::array<uint8_t, 4096> emulated_memory;
 
     void setKey(uint8_t n, bool state);
 
@@ -40,6 +38,8 @@ class Chip8 {
     private:
     void beep();
 
+    std::array<uint8_t, 4096> emulated_memory;
+
     uint16_t pc = 512; //12 bits
 
     uint16_t I_reg; //I register
@@ -58,6 +58,7 @@ class Chip8 {
 
     bool is_running = true;
 
+    friend void loadChip8Program(Chip8& chip, std::string filename);
 };
 
 extern Chip8 global_chip;
