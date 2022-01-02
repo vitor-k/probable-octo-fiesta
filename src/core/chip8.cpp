@@ -157,9 +157,7 @@ void Chip8::fetchDecodeExecute() {
         case 0x0:
             if(insty.whole == 0x00E0) {
                 // clear screen
-                for(int i=0; i< nWidth*nHeight; i++) {
-                    framebuffer[i] = false;
-                }
+                framebuffer.fill(false);
                 frame_dirty = true;
             }
             else if(insty.whole == 0x00EE) {
