@@ -38,21 +38,21 @@ class Chip8 {
     private:
     void beep();
 
-    std::array<uint8_t, 4096> emulated_memory;
+    std::array<uint8_t, 4096> emulated_memory = {0};
 
     uint16_t pc = 512; //12 bits
 
-    uint16_t I_reg; //I register
-    uint8_t VX_reg[16]; //VX registers
+    uint16_t I_reg = 0; //I register
+    uint8_t VX_reg[16] = {0}; //VX registers
 
     std::stack<uint16_t> stack;
 
-    uint8_t delay_timer;
-    uint8_t sound_timer;
+    uint8_t delay_timer = 0;
+    uint8_t sound_timer = 0;
 
-    bool key[16]; // pressed keys
+    bool key[16] = {false}; // pressed keys
 
-    std::array<bool, nWidth*nHeight> framebuffer;
+    std::array<bool, nWidth*nHeight> framebuffer = {false};
 
     uint32_t micro_wait = 1428; // default 700Hz, 1.428ms
 
