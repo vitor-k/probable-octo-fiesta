@@ -19,6 +19,8 @@ public:
     void Present();
     bool IsOpen();
 private:
+    bool is_open;
+
     Color bg;
     Color foreground;
     Color background;
@@ -27,6 +29,4 @@ private:
     SDL_Window* window = nullptr;
 
     SDL_Surface* contentSurface;
-
-    bool is_open;
 };

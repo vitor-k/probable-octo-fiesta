@@ -22,11 +22,8 @@ class Chip8 {
 
     bool frameAt(uint8_t x, uint8_t y) const;
 
-    bool frame_dirty = true; //indicates the framebuffer was modified
     bool isFrameDirty() const;
     void clearDirty();
-
-    std::mutex frame_mutex;
 
     bool isRunning() const;
     void shutDown();
@@ -38,12 +35,20 @@ class Chip8 {
     private:
     void beep();
 
-    std::array<uint8_t, 4096> emulated_memory = {0};
+    friend void loadChip8Program(Chip8& chip, std::string filename);
 
+    // variables from here
+    public:
+    std::mutex frame_mutex;
+    bool frame_dirty = true; //indicates the framebuffer was modified
+
+    private:
     uint16_t pc = 512; //12 bits
 
     uint16_t I_reg = 0; //I register
     uint8_t VX_reg[16] = {0}; //VX registers
+
+    std::array<uint8_t, 4096> emulated_memory = { 0 };
 
     std::stack<uint16_t> stack;
 
@@ -54,11 +59,9 @@ class Chip8 {
 
     std::array<bool, nWidth*nHeight> framebuffer = {false};
 
-    uint32_t micro_wait = 1428; // default 700Hz, 1.428ms
-
     bool is_running = true;
 
-    friend void loadChip8Program(Chip8& chip, std::string filename);
+    uint32_t micro_wait = 1428; // default 700Hz, 1.428ms
 };
 
 extern Chip8 global_chip;
