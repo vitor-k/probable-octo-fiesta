@@ -74,6 +74,7 @@ int main(int argc, char* args[]) {
             switch (static_cast<char>(arg)) {
             case 's':
                 global_chip.setCoreFrequency(350); // 350Hz, 2.857ms
+                break;
             case 'h':
                 printHelp(args[0]);
                 return 0;
