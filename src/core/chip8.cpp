@@ -39,43 +39,43 @@ namespace {
 } // Anonymous namespace
 
 struct Instruction {
-    uint16_t whole;
+    uint16_t whole{0};
 
-    Instruction(uint8_t a, uint8_t b) {
+    constexpr Instruction(uint8_t a, uint8_t b) {
         whole = static_cast<uint16_t>(a) << 8 | b;
     }
 
     template<int N>
-    constexpr uint8_t getNibble() {
+    constexpr uint8_t getNibble() const {
         return (whole >> (4*N)) & 0xF;
     }
 
-    constexpr uint8_t getFirstNibble() {
+    constexpr uint8_t getFirstNibble() const {
         return getNibble<3>();
     }
-    constexpr uint8_t getSecondNibble() {
+    constexpr uint8_t getSecondNibble() const {
         return getNibble<2>();
     }
-    constexpr uint8_t getThirdNibble() {
+    constexpr uint8_t getThirdNibble() const {
         return getNibble<1>();
     }
-    constexpr uint8_t getFourthNibble() {
+    constexpr uint8_t getFourthNibble() const {
         return getNibble<0>();
     }
 
-    constexpr uint16_t getLastThreeNibbles() {
+    constexpr uint16_t getLastThreeNibbles() const {
         return whole & 0xFFF;
     }
 
     template<int N>
-    constexpr uint8_t getByte() {
+    constexpr uint8_t getByte() const {
         return (whole >> (8*N)) & 0xFF;
     }
 
-    constexpr uint8_t getFirstByte() {
+    constexpr uint8_t getFirstByte() const {
         return getByte<1>();
     }
-    constexpr uint8_t getSecondByte() {
+    constexpr uint8_t getSecondByte() const {
         return getByte<0>();
     }
 
@@ -147,12 +147,12 @@ void Chip8::fetchDecodeExecute() {
     }
 
     //fetch
-    Instruction insty(emulated_memory[pc], emulated_memory[pc+1]);
+    const Instruction insty(emulated_memory[pc], emulated_memory[pc+1]);
 
     pc += 2;
 
     //decode
-    auto first_nibble = insty.getFirstNibble();
+    const auto first_nibble = insty.getFirstNibble();
     switch(first_nibble){
         case 0x0:
             if(insty.whole == 0x00E0) {
@@ -220,23 +220,23 @@ void Chip8::fetchDecodeExecute() {
                     break;
                 case 0x4: // 8XY4 add
                     {
-                        uint16_t sum = static_cast<uint16_t>(VX_reg[insty.getSecondNibble()]) + VX_reg[insty.getThirdNibble()];
+                        const uint16_t sum = static_cast<uint16_t>(VX_reg[insty.getSecondNibble()]) + VX_reg[insty.getThirdNibble()];
                         VX_reg[0xF] = (sum > 255);
                         VX_reg[insty.getSecondNibble()] = static_cast<uint8_t>(sum % 256);
                     }
                     break;
                 case 0x5: // 8XY5 subtract
                     {
-                        uint8_t vx = VX_reg[insty.getSecondNibble()];
-                        uint8_t vy = VX_reg[insty.getThirdNibble()];
+                        const uint8_t vx = VX_reg[insty.getSecondNibble()];
+                        const uint8_t vy = VX_reg[insty.getThirdNibble()];
                         VX_reg[0xF] = (vx >= vy);
                         VX_reg[insty.getSecondNibble()] = vx - vy;
                     }
                     break;
                 case 0x7: // 8XY7 subtract
                     {
-                        uint8_t vx = VX_reg[insty.getSecondNibble()];
-                        uint8_t vy = VX_reg[insty.getThirdNibble()];
+                        const uint8_t vx = VX_reg[insty.getSecondNibble()];
+                        const uint8_t vy = VX_reg[insty.getThirdNibble()];
                         VX_reg[0xF] = (vy >= vx);
                         VX_reg[insty.getSecondNibble()] = vy - vx;
                     }
@@ -274,9 +274,9 @@ void Chip8::fetchDecodeExecute() {
             break;
         case 0xD: // DXYN display/draw
         {
-            int x = VX_reg[insty.getSecondNibble()] % nWidth;
-            int y = VX_reg[insty.getThirdNibble()] % nHeight;
-            int n = insty.getFourthNibble();
+            const int x = VX_reg[insty.getSecondNibble()] % nWidth;
+            const int y = VX_reg[insty.getThirdNibble()] % nHeight;
+            const int n = insty.getFourthNibble();
             bool unset = false;
 
             frame_mutex.lock();
@@ -348,13 +348,13 @@ void Chip8::fetchDecodeExecute() {
                     break;
                 case 0x29: // FX29 font character
                     {
-                    uint8_t x = VX_reg[insty.getSecondNibble()];
+                    const uint8_t x = VX_reg[insty.getSecondNibble()];
                     I_reg = font_starting_address + 5*(x & 0xF);
                     }
                     break;
                 case 0x33: // FX33 decimal conversion
                     {
-                    uint8_t number = VX_reg[insty.getSecondNibble()];
+                    const uint8_t number = VX_reg[insty.getSecondNibble()];
                     emulated_memory[I_reg] = number / 100;
                     emulated_memory[I_reg+1] = (number % 100) / 10;
                     emulated_memory[I_reg+2] = number % 10;
@@ -362,7 +362,7 @@ void Chip8::fetchDecodeExecute() {
                     break;
                 case 0x55: // FX55 store in memory
                     {
-                    uint8_t x = insty.getSecondNibble();
+                    const uint8_t x = insty.getSecondNibble();
                     for(int i=0; i<=x; i++) {
                         emulated_memory[I_reg+i] = VX_reg[i];
                     }
@@ -373,7 +373,7 @@ void Chip8::fetchDecodeExecute() {
                     break;
                 case 0x65: // FX65 load from memory
                     {
-                    uint8_t x = insty.getSecondNibble();
+                    const uint8_t x = insty.getSecondNibble();
                     for(int i=0; i<=x; i++) {
                         VX_reg[i] = emulated_memory[I_reg+i];
                     }

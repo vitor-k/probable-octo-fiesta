@@ -22,7 +22,7 @@ class Chip8 {
 
     bool frameAt(uint8_t x, uint8_t y) const;
 
-    bool frame_dirty; //indicates the framebuffer was modified
+    bool frame_dirty = true; //indicates the framebuffer was modified
     bool isFrameDirty() const;
     void clearDirty();
 
