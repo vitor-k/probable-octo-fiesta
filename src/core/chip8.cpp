@@ -229,16 +229,16 @@ void Chip8::fetchDecodeExecute() {
                     {
                         const uint8_t vx = VX_reg[insty.getSecondNibble()];
                         const uint8_t vy = VX_reg[insty.getThirdNibble()];
-                        VX_reg[0xF] = (vx >= vy);
                         VX_reg[insty.getSecondNibble()] = vx - vy;
+                        VX_reg[0xF] = (vx >= vy);
                     }
                     break;
                 case 0x7: // 8XY7 subtract
                     {
                         const uint8_t vx = VX_reg[insty.getSecondNibble()];
                         const uint8_t vy = VX_reg[insty.getThirdNibble()];
-                        VX_reg[0xF] = (vy >= vx);
                         VX_reg[insty.getSecondNibble()] = vy - vx;
+                        VX_reg[0xF] = (vy >= vx);
                     }
                     break;
                 case 0x6: //8XY6 right shift
