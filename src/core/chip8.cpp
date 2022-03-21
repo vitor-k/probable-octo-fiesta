@@ -1,6 +1,8 @@
 #include "chip8.h"
+#include <algorithm>
 #include <chrono>
 #include <random>
+#include <thread>
 
 #include <fmt/core.h>
 
@@ -392,6 +394,8 @@ void Chip8::fetchDecodeExecute() {
 }
 
 void Chip8::mainLoop() {
+    const uint32_t default_sleep = std::min(micro_wait, 16666u);
+    uint32_t recommended_sleep = default_sleep;
     while(is_running) {
         using namespace std::chrono;
         auto current_time = system_clock::now().time_since_epoch();
@@ -400,10 +404,21 @@ void Chip8::mainLoop() {
             tickSoundTimer();
             timer_previous_time = current_time;
         }
+        else {
+            recommended_sleep = std::min(recommended_sleep, static_cast<uint32_t>(duration_cast<microseconds>(current_time - timer_previous_time).count() / 2u));
+        }
 
         if(duration_cast<microseconds>(current_time - main_previous_time).count() > micro_wait) {
             fetchDecodeExecute();
             main_previous_time = current_time;
         }
+        else {
+            recommended_sleep = std::min(recommended_sleep, static_cast<uint32_t>(duration_cast<microseconds>(current_time - main_previous_time).count() / 2u));
+        }
+
+        if(recommended_sleep > default_sleep / 2) {
+            std::this_thread::sleep_for(std::chrono::microseconds(default_sleep / 2));
+        }
+        recommended_sleep = default_sleep;
     }
 }

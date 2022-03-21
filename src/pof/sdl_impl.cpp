@@ -126,6 +126,9 @@ void SDL_impl::Present() {
         rect.h = height;
         SDL_BlitScaled(contentSurface, NULL, screenSurface, &rect);
         SDL_UpdateWindowSurface( window );
+
+        // This one won't be necessary if gpu rendering and vsync are implemented
+        SDL_Delay(1);
     }
 }
 
@@ -156,6 +159,7 @@ void SDL_impl::PollEvents() {
         }
     }
 
+    SDL_Delay(1);
 }
 
 bool SDL_impl::IsOpen() {
