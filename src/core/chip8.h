@@ -30,6 +30,7 @@ class Chip8 {
 
     void tickDelayTimer();
     void tickSoundTimer();
+    void tickCPU(uint32_t cycles);
     void fetchDecodeExecute();
 
     private:

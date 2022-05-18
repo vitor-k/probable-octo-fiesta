@@ -141,6 +141,12 @@ void Chip8::tickSoundTimer() {
     }
 }
 
+void Chip8::tickCPU(uint32_t cycles) {
+    for(uint32_t i = 0; i < cycles; i++){
+        fetchDecodeExecute();
+    }
+}
+
 void Chip8::fetchDecodeExecute() {
     if (pc >= 4096) {
         fmt::print("Out of bounds pc\n");
@@ -394,26 +400,20 @@ void Chip8::fetchDecodeExecute() {
 }
 
 void Chip8::mainLoop() {
-    const uint32_t default_sleep = std::min(micro_wait, 16666u);
+    const uint32_t default_sleep = 16666u;
     uint32_t recommended_sleep = default_sleep;
     while(is_running) {
         using namespace std::chrono;
         auto current_time = system_clock::now().time_since_epoch();
-        if(duration_cast<microseconds>(current_time - timer_previous_time).count() > 16666) { // 60Hz, 16.666ms
+        auto time_difference = duration_cast<microseconds>(current_time - timer_previous_time).count();
+        if(time_difference > 16666) { // 60Hz, 16.666ms
+            tickCPU(16666u/micro_wait);
             tickDelayTimer();
             tickSoundTimer();
             timer_previous_time = current_time;
         }
         else {
-            recommended_sleep = std::min(recommended_sleep, static_cast<uint32_t>(duration_cast<microseconds>(current_time - timer_previous_time).count() / 2u));
-        }
-
-        if(duration_cast<microseconds>(current_time - main_previous_time).count() > micro_wait) {
-            fetchDecodeExecute();
-            main_previous_time = current_time;
-        }
-        else {
-            recommended_sleep = std::min(recommended_sleep, static_cast<uint32_t>(duration_cast<microseconds>(current_time - main_previous_time).count() / 2u));
+            recommended_sleep = std::min(recommended_sleep, static_cast<uint32_t>(time_difference / 2u));
         }
 
         if(recommended_sleep > default_sleep / 2) {
